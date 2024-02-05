@@ -1,0 +1,77 @@
+
+// Program: Flag Pattern Scanner MT4
+// Developer's Site: forexroboteasy.com
+// Developer: Forex Robot Easy Team
+
+#property strict
+
+// Indicator input parameters
+input int lookbackPeriod = 100; // Number of bars to look back for flag pattern identification
+input double minFlagHeight = 0.01; // Minimum flag height as a percentage of the previous trend
+input double maxFlagHeight = 0.5; // Maximum flag height as a percentage of the previous trend
+
+// Global variables
+double flagHeight;
+double flagLow;
+double flagHigh;
+double fibLevel38;
+double fibLevel50;
+double fibLevel61;
+
+// Indicator initialization function
+int OnInit()
+{
+    // Set indicator buffers
+    SetIndexBuffer(0, flagLow);
+    SetIndexBuffer(1, flagHigh);
+    SetIndexBuffer(2, fibLevel38);
+    SetIndexBuffer(3, fibLevel50);
+    SetIndexBuffer(4, fibLevel61);
+  
+    // Set indicator labels
+    IndicatorSetString(INDICATOR_SHORTNAME, 'Flag Pattern Scanner MT4');
+  
+    return(INIT_SUCCEEDED);
+}
+
+// Indicator calculation function
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+    int limit = rates_total - prev_calculated;
+  
+    if (limit <= 0) return(0);
+  
+    // Loop through all bars from the current to the lookback period
+    for (int i = limit; i >= 0; i--)
+    {
+        // Calculate the previous trend height
+        double prevTrendHeight = high[i] - low[i];
+      
+        // Calculate the flag height
+        flagHeight = high[i] - low[i+1];
+      
+        // Check if the flag height meets the specified criteria
+        if (flagHeight >= prevTrendHeight * minFlagHeight && flagHeight <= prevTrendHeight * maxFlagHeight)
+        {
+            // Calculate the flag low and high
+            flagLow = low[i+1];
+            flagHigh = high[i];
+          
+            // Calculate Fibonacci retracement levels
+            fibLevel38 = flagHigh - (flagHeight * 0.382);
+            fibLevel50 = flagHigh - (flagHeight * 0.5);
+            fibLevel61 = flagHigh - (flagHeight * 0.618);
+        }
+    }
+  
+    return(rates_total);
+}
